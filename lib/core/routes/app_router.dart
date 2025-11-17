@@ -3,13 +3,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cashup/core/di/injector.dart';
 import 'package:cashup/domain/usecases/onboarding/check_onboarding_status.dart';
+import 'package:cashup/domain/usecases/auth/get_current_user.dart';
 import 'package:cashup/presentation/blocs/onboarding/onboarding_bloc.dart';
 import 'package:cashup/presentation/blocs/auth/auth_bloc.dart';
+import 'package:cashup/presentation/blocs/home/home_bloc.dart';
 import 'package:cashup/presentation/screens/login_screen.dart';
 import 'package:cashup/presentation/screens/onboarding_screen.dart';
 import 'package:cashup/presentation/screens/register_screen.dart';
 import 'package:cashup/presentation/screens/forgot_password_screen.dart';
 import 'package:cashup/presentation/screens/home_screen.dart';
+import 'package:cashup/presentation/screens/transaction_detail_screen.dart';
 
 /// **APP_ROUTER (Configuración de Navegación)**
 /// 
@@ -21,15 +24,19 @@ import 'package:cashup/presentation/screens/home_screen.dart';
 /// 4. Redirecciones condicionales
 /// 
 /// **Flujo de navegación en nuestra app:**
-/// 1. App inicia → Verifica si ya vio onboarding
-/// 2. Si NO lo vio → va a /onboarding
-/// 3. Si YA lo vio → va a /login
-/// 4. Después del login → iría a /home (lo implementarás después)
+/// 1. App inicia → Verifica si hay sesión activa
+/// 2. Si hay sesión → va a /home
+/// 3. Si NO hay sesión → Verifica si ya vio onboarding
+/// 4. Si NO lo vio → va a /onboarding
+/// 5. Si YA lo vio → va a /login
+/// 6. Después del login → va a /home
 class AppRouter {
   // Instancia del use case para verificar el estado del onboarding
   final CheckOnboardingStatus _checkOnboardingStatus;
+  // Instancia del use case para verificar sesión activa
+  final GetCurrentUser _getCurrentUser;
 
-  AppRouter(this._checkOnboardingStatus);
+  AppRouter(this._checkOnboardingStatus, this._getCurrentUser);
 
   /// Configuración del router
   /// 
@@ -41,9 +48,38 @@ class AppRouter {
     // **redirect:** Se ejecuta ANTES de cada navegación
     // Aquí manejamos la lógica de "¿A dónde debe ir el usuario?"
     redirect: (context, state) async {
+      // Verificar si hay sesión activa
+      final currentUser = await _getCurrentUser();
+      final isAuthenticated = currentUser != null;
+
+      // Proteger rutas autenticadas
+      if (state.matchedLocation == '/home') {
+        if (!isAuthenticated) {
+          // Si intenta acceder a /home sin sesión, redirigir al login
+          return '/login';
+        }
+        return null; // Permitir acceso
+      }
+
+      // Proteger rutas de autenticación (redirigir a home si ya está autenticado)
+      if (state.matchedLocation == '/login' || 
+          state.matchedLocation == '/register' ||
+          state.matchedLocation == '/forgot-password') {
+        if (isAuthenticated) {
+          // Si ya está autenticado, redirigir a home
+          return '/home';
+        }
+        return null; // Permitir acceso
+      }
+
       // Solo aplicamos la lógica de redirección en la ruta raíz
       if (state.matchedLocation == '/') {
-        // Verificamos si ya vio el onboarding
+        // Si hay sesión activa, ir directamente a home
+        if (isAuthenticated) {
+          return '/home';
+        }
+
+        // Si no hay sesión, verificar onboarding
         final hasSeenOnboarding = await _checkOnboardingStatus();
 
         if (hasSeenOnboarding) {
@@ -55,7 +91,7 @@ class AppRouter {
         }
       }
 
-      // Si no es la ruta raíz, no redirigimos
+      // Si no es ninguna de las rutas anteriores, no redirigimos
       return null;
     },
 
@@ -131,15 +167,33 @@ class AppRouter {
       /// Ruta de Home (/home)
       /// 
       /// Pantalla principal tras autenticación exitosa
+      /// **MultiBlocProvider:** Provee tanto AuthBloc como HomeBloc
       GoRoute(
         path: '/home',
         pageBuilder: (context, state) => MaterialPage(
           key: state.pageKey,
-          child: BlocProvider.value(
-            value: sl<AuthBloc>(),
+          child: MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: sl<AuthBloc>()),
+              BlocProvider(create: (context) => sl<HomeBloc>()),
+            ],
             child: const HomeScreen(),
           ),
         ),
+      ),
+
+      /// Ruta de Detalle de Transacción (/transaction/:id)
+      /// 
+      /// Muestra los detalles de una transacción y permite editarla o eliminarla
+      GoRoute(
+        path: '/transaction/:id',
+        pageBuilder: (context, state) {
+          final transactionId = state.pathParameters['id']!;
+          return MaterialPage(
+            key: state.pageKey,
+            child: TransactionDetailScreen(transactionId: transactionId),
+          );
+        },
       ),
 
       // ========== RUTAS FUTURAS ==========

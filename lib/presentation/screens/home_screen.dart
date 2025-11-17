@@ -2,272 +2,300 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cashup/core/constants/app_colors.dart';
+import 'package:cashup/core/constants/app_strings.dart';
+import 'package:cashup/core/di/injector.dart';
+import 'package:cashup/domain/entities/transaction_type.dart';
 import 'package:cashup/presentation/blocs/auth/auth_bloc.dart';
-import 'package:cashup/presentation/blocs/auth/auth_event.dart';
 import 'package:cashup/presentation/blocs/auth/auth_state.dart';
+import 'package:cashup/presentation/blocs/home/home_bloc.dart';
+import 'package:cashup/presentation/blocs/home/home_event.dart';
+import 'package:cashup/presentation/blocs/home/home_state.dart';
+import 'package:cashup/presentation/blocs/add_transaction/add_transaction_bloc.dart';
+import 'package:cashup/presentation/widgets/home/balance_card.dart';
+import 'package:cashup/presentation/widgets/home/transaction_card.dart';
+import 'package:cashup/presentation/widgets/home/empty_transactions_widget.dart';
+import 'package:cashup/presentation/screens/add_transaction_screen.dart';
 
 /// **HOME_SCREEN (Pantalla de Inicio)**
 /// 
-/// Pantalla temporal para verificar que la autenticación funciona correctamente.
-/// Muestra información del usuario autenticado y permite cerrar sesión.
-class HomeScreen extends StatelessWidget {
+/// Pantalla principal de la aplicación que muestra:
+/// - Saludo personalizado con nombre del usuario
+/// - Balance total, ingresos y gastos
+/// - Botones para agregar ingresos y gastos
+/// - Lista de movimientos recientes
+/// 
+/// **Diseño basado en las imágenes adjuntas:**
+/// - Fondo claro (AppColors.background)
+/// - Cards blancos con sombras suaves
+/// - Colores verde para ingresos, rojo para gastos
+/// - Botones grandes y redondeados
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  /// Método público para refrescar los datos desde widgets hijos
+  void refreshData() {
+    if (mounted) {
+      context.read<HomeBloc>().add(const HomeDataRefreshed());
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AuthBloc, AuthState>(
-      listener: (context, state) {
-        if (state is AuthUnauthenticated) {
-          // Usuario cerró sesión, volver al login
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, authState) {
+        // Si el usuario se desautentica (logout), redirigir al login
+        if (authState is AuthUnauthenticated) {
           context.go('/login');
         }
       },
-      builder: (context, state) {
-        // Obtener usuario del estado
-        final user = state is AuthAuthenticated ? state.user : null;
+      child: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, authState) {
+          final user = authState is AuthAuthenticated ? authState.user : null;
+          final userName = user?.profile?.fullName ?? AppStrings.guest;
 
         return Scaffold(
-          backgroundColor: Colors.white,
-          appBar: AppBar(
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
-            title: const Text('Home'),
-            elevation: 0,
-            actions: [
-              // Botón de logout
-              IconButton(
-                icon: const Icon(Icons.logout),
-                tooltip: 'Cerrar sesión',
-                onPressed: () {
-                  // Mostrar confirmación
-                  _showLogoutDialog(context);
-                },
-              ),
-            ],
+          backgroundColor: AppColors.background,
+          body: SafeArea(
+            child: BlocBuilder<HomeBloc, HomeState>(
+              builder: (context, state) {
+                // Cargar datos cuando se monta la pantalla
+                if (state is HomeInitial) {
+                  context.read<HomeBloc>().add(const HomeDataRequested());
+                }
+
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    context.read<HomeBloc>().add(const HomeDataRefreshed());
+                    // Esperar un poco para que el refresh indicator se muestre
+                    await Future.delayed(const Duration(milliseconds: 500));
+                  },
+                  color: AppColors.primary,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Saludo y nombre del usuario
+                        _buildHeader(userName),
+                        const SizedBox(height: 24),
+
+                        // Card de Balance
+                        if (state is HomeLoading)
+                          const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(48.0),
+                              child: CircularProgressIndicator(
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          )
+                        else if (state is HomeLoaded)
+                          BalanceCard(
+                            balance: state.balance,
+                            totalIncome: state.totalIncome,
+                            totalExpenses: state.totalExpenses,
+                          )
+                        else if (state is HomeError)
+                          _buildErrorCard(state.message)
+                        else
+                          const SizedBox.shrink(),
+
+                        const SizedBox(height: 24),
+
+                        // Botones de acción
+                        if (state is! HomeLoading) _buildActionButtons(context),
+
+                        const SizedBox(height: 32),
+
+                        // Título "Movimientos Recientes"
+                        const Text(
+                          AppStrings.recentMovements,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Lista de transacciones recientes
+                        if (state is HomeLoading)
+                          const SizedBox.shrink()
+                        else if (state is HomeLoaded)
+                          state.recentTransactions.isEmpty
+                              ? const EmptyTransactionsWidget()
+                              : Column(
+                                  children: state.recentTransactions
+                                      .map((transaction) => TransactionCard(
+                                            transaction: transaction,
+                                          ))
+                                      .toList(),
+                                )
+                        else if (state is HomeError)
+                          const SizedBox.shrink()
+                        else
+                          const EmptyTransactionsWidget(),
+
+                        // Espacio al final para el scroll
+                        const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
-          body: user != null
-              ? _buildAuthenticatedContent(context, user)
-              : _buildLoadingContent(),
         );
-      },
+        },
+      ),
     );
   }
 
-  /// Contenido cuando el usuario está autenticado
-  Widget _buildAuthenticatedContent(BuildContext context, dynamic user) {
-    final profile = user.profile;
-
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+  /// Construye el header con saludo y nombre
+  Widget _buildHeader(String userName) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 40),
-
-            // Ícono de éxito
-            _buildSuccessIcon(),
-            const SizedBox(height: 32),
-
-            // Mensaje de bienvenida
             const Text(
-              '¡Autenticación Exitosa!',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-
-            const Text(
-              'Has iniciado sesión correctamente',
+              AppStrings.hello,
               style: TextStyle(
                 fontSize: 16,
                 color: AppColors.textSecondary,
               ),
-              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 48),
-
-            // Card con información del usuario
-            _buildUserInfoCard(profile),
-            const SizedBox(height: 32),
-
-            // Botón de cerrar sesión
-            _buildLogoutButton(context),
-            const SizedBox(height: 16),
-
-            // Nota
-            _buildNote(),
+            const SizedBox(height: 4),
+            Text(
+              userName,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
           ],
         ),
-      ),
-    );
-  }
-
-  /// Ícono de éxito
-  Widget _buildSuccessIcon() {
-    return Container(
-      height: 120,
-      width: 120,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.primary, AppColors.secondary],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary,
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+        // Placeholder para avatar o menú (opcional)
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: AppColors.textSecondary.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
           ),
-        ],
-      ),
-      child: const Icon(
-        Icons.check_circle_outline,
-        size: 60,
-        color: Colors.white,
-      ),
-    );
-  }
-
-  /// Card con información del usuario
-  Widget _buildUserInfoCard(dynamic profile) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Título
-            const Row(
-              children: [
-                Icon(
-                  Icons.person,
-                  color: AppColors.primary,
-                  size: 24,
-                ),
-                SizedBox(width: 12),
-                Text(
-                  'Información del Usuario',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Datos del usuario
-            _buildInfoRow('Nombre completo', profile.fullName),
-            const SizedBox(height: 16),
-            _buildInfoRow('Email', profile.email),
-            const SizedBox(height: 16),
-            _buildInfoRow('Fecha de nacimiento', _formatDate(profile.birthDate)),
-            const SizedBox(height: 16),
-            _buildInfoRow('Edad', '${profile.age ?? 'N/A'} años'),
-            if (profile.gender != null) ...[
-              const SizedBox(height: 16),
-              _buildInfoRow('Género', _formatGender(profile.gender)),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Fila de información
-  Widget _buildInfoRow(String label, String value) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 140,
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Text(
-            value,
-            style: const TextStyle(
-              fontSize: 14,
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
+          child: const Icon(
+            Icons.person_outline,
+            color: AppColors.textSecondary,
           ),
         ),
       ],
     );
   }
 
-  /// Botón de cerrar sesión
-  Widget _buildLogoutButton(BuildContext context) {
-    return SizedBox(
-      height: 56,
-      child: ElevatedButton.icon(
-        onPressed: () => _showLogoutDialog(context),
-        icon: const Icon(Icons.logout),
-        label: const Text(
-          'Cerrar Sesión',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
+  /// Construye los botones de acción (+ Ingreso y + Gasto)
+  Widget _buildActionButtons(BuildContext context) {
+    return Row(
+      children: [
+        // Botón "+ Ingreso" (verde)
+        Expanded(
+          child: _buildActionButton(
+            context: context,
+            label: AppStrings.addIncome,
+            color: AppColors.income,
+            icon: Icons.add,
+            onPressed: () {
+              context.read<HomeBloc>().add(const HomeAddIncomePressed());
+              _showAddTransactionModal(context, TransactionType.income);
+            },
           ),
         ),
+        const SizedBox(width: 16),
+        
+        // Botón "+ Gasto" (rojo)
+        Expanded(
+          child: _buildActionButton(
+            context: context,
+            label: AppStrings.addExpense,
+            color: AppColors.expense,
+            icon: Icons.remove,
+            onPressed: () {
+              context.read<HomeBloc>().add(const HomeAddExpensePressed());
+              _showAddTransactionModal(context, TransactionType.expense);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Construye un botón de acción individual
+  Widget _buildActionButton({
+    required BuildContext context,
+    required String label,
+    required Color color,
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return SizedBox(
+      height: 56,
+      child: ElevatedButton(
+        onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.error,
-          foregroundColor: Colors.white,
+          backgroundColor: color,
+          foregroundColor: AppColors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
           ),
           elevation: 0,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  /// Nota explicativa
-  Widget _buildNote() {
+  /// Construye un card de error
+  Widget _buildErrorCard(String message) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24.0),
       decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.primary,
-        ),
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(
-            Icons.info_outline,
-            color: AppColors.primary,
-            size: 20,
+          const Icon(
+            Icons.error_outline,
+            color: AppColors.error,
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Esta es una pantalla temporal para verificar la autenticación. Aquí irá el contenido principal de la app.',
-              style: TextStyle(
-                fontSize: 13,
-                color: AppColors.textPrimary,
+              message,
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppColors.error,
               ),
             ),
           ),
@@ -276,80 +304,25 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  /// Contenido de carga
-  Widget _buildLoadingContent() {
-    return const Center(
-      child: CircularProgressIndicator(
-        color: AppColors.primary,
+  /// Muestra el modal para agregar transacción
+  Future<void> _showAddTransactionModal(BuildContext context, TransactionType type) async {
+    // Guardar referencia al BLoC antes del await para evitar usar context después
+    final bloc = context.read<HomeBloc>();
+    
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => BlocProvider(
+        create: (context) => sl<AddTransactionBloc>(),
+        child: AddTransactionScreen(initialType: type),
       ),
     );
-  }
 
-  /// Diálogo de confirmación de logout
-  void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: const Text(
-            '¿Cerrar sesión?',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          content: const Text(
-            '¿Estás seguro que deseas cerrar tu sesión?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text(
-                'Cancelar',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                // Enviar evento de logout al BLoC
-                context.read<AuthBloc>().add(const AuthLogoutRequested());
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.error,
-                foregroundColor: Colors.white,
-                elevation: 0,
-              ),
-              child: const Text('Cerrar sesión'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  /// Formatea la fecha
-  String _formatDate(DateTime date) {
-    final months = [
-      'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
-    ];
-    return '${date.day} de ${months[date.month - 1]} de ${date.year}';
-  }
-
-  /// Formatea el género
-  String _formatGender(String gender) {
-    final genderMap = {
-      'masculino': 'Masculino',
-      'femenino': 'Femenino',
-      'otro': 'Otro',
-      'prefiero_no_decir': 'Prefiero no decir',
-    };
-    return genderMap[gender] ?? gender;
+    // Si la transacción fue guardada exitosamente, refrescar los datos
+    // Usamos la referencia del BLoC guardada antes del await
+    if (result == true) {
+      bloc.add(const HomeDataRefreshed());
+    }
   }
 }
-

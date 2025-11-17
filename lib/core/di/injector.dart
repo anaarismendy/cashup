@@ -5,14 +5,20 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 // Data Sources
 import 'package:cashup/data/datasources/local_storage.dart' as local_storage;
 import 'package:cashup/data/datasources/supabase_auth_datasource.dart';
+import 'package:cashup/data/datasources/supabase_transaction_datasource.dart';
+import 'package:cashup/data/datasources/supabase_category_datasource.dart';
 
 // Repositories Implementations
 import 'package:cashup/data/repositories/onboarding_repository_impl.dart';
 import 'package:cashup/data/repositories/auth_repository_impl.dart';
+import 'package:cashup/data/repositories/transaction_repository_impl.dart';
+import 'package:cashup/data/repositories/category_repository_impl.dart';
 
 // Domain Repositories
 import 'package:cashup/domain/repositories/onboarding_repository.dart';
 import 'package:cashup/domain/repositories/auth_repository.dart';
+import 'package:cashup/domain/repositories/transaction_repository.dart';
+import 'package:cashup/domain/repositories/category_repository.dart';
 
 // Onboarding Use Cases
 import 'package:cashup/domain/usecases/onboarding/check_onboarding_status.dart';
@@ -25,9 +31,26 @@ import 'package:cashup/domain/usecases/auth/logout_user.dart';
 import 'package:cashup/domain/usecases/auth/get_current_user.dart';
 import 'package:cashup/domain/usecases/auth/reset_password.dart';
 
+// Transaction Use Cases
+import 'package:cashup/domain/usecases/transactions/get_transactions.dart';
+import 'package:cashup/domain/usecases/transactions/get_recent_transactions.dart';
+import 'package:cashup/domain/usecases/transactions/get_transaction_summary.dart';
+import 'package:cashup/domain/usecases/transactions/create_transaction.dart';
+import 'package:cashup/domain/usecases/transactions/get_transaction_by_id.dart';
+import 'package:cashup/domain/usecases/transactions/update_transaction.dart';
+import 'package:cashup/domain/usecases/transactions/delete_transaction.dart';
+
+// Category Use Cases
+import 'package:cashup/domain/usecases/categories/get_categories.dart';
+import 'package:cashup/domain/usecases/categories/create_category.dart';
+
 // BLoCs
 import 'package:cashup/presentation/blocs/onboarding/onboarding_bloc.dart';
 import 'package:cashup/presentation/blocs/auth/auth_bloc.dart';
+import 'package:cashup/presentation/blocs/home/home_bloc.dart';
+import 'package:cashup/presentation/blocs/add_transaction/add_transaction_bloc.dart';
+import 'package:cashup/presentation/blocs/create_category/create_category_bloc.dart';
+import 'package:cashup/presentation/blocs/transaction_detail/transaction_detail_bloc.dart';
 
 /// **INJECTOR (Configuración de GetIt)**
 /// 
@@ -91,6 +114,18 @@ Future<void> initializeDependencies() async {
     () => SupabaseAuthDataSource(sl()),
   );
 
+  /// SupabaseTransactionDataSource
+  /// Maneja todas las operaciones de transacciones con Supabase
+  sl.registerLazySingleton<SupabaseTransactionDataSource>(
+    () => SupabaseTransactionDataSource(sl()),
+  );
+
+  /// SupabaseCategoryDataSource
+  /// Maneja todas las operaciones de categorías con Supabase
+  sl.registerLazySingleton<SupabaseCategoryDataSource>(
+    () => SupabaseCategoryDataSource(sl()),
+  );
+
   // ========== REPOSITORIES ==========
   // Implementaciones de los repositorios
 
@@ -106,6 +141,18 @@ Future<void> initializeDependencies() async {
   /// Repositorio de autenticación
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(sl()),
+  );
+
+  /// TransactionRepository
+  /// Repositorio de transacciones
+  sl.registerLazySingleton<TransactionRepository>(
+    () => TransactionRepositoryImpl(sl()),
+  );
+
+  /// CategoryRepository
+  /// Repositorio de categorías
+  sl.registerLazySingleton<CategoryRepository>(
+    () => CategoryRepositoryImpl(sl()),
   );
 
   // ========== USE CASES ==========
@@ -155,6 +202,64 @@ Future<void> initializeDependencies() async {
     () => ResetPassword(sl()),
   );
 
+  // ========== TRANSACTION USE CASES ==========
+
+  /// GetTransactions
+  /// Use case para obtener transacciones
+  sl.registerLazySingleton<GetTransactions>(
+    () => GetTransactions(sl()),
+  );
+
+  /// GetRecentTransactions
+  /// Use case para obtener transacciones recientes
+  sl.registerLazySingleton<GetRecentTransactions>(
+    () => GetRecentTransactions(sl()),
+  );
+
+  /// GetTransactionSummary
+  /// Use case para obtener resumen financiero
+  sl.registerLazySingleton<GetTransactionSummary>(
+    () => GetTransactionSummary(sl()),
+  );
+
+  /// CreateTransaction
+  /// Use case para crear una nueva transacción
+  sl.registerLazySingleton<CreateTransaction>(
+    () => CreateTransaction(sl()),
+  );
+
+  /// GetTransactionById
+  /// Use case para obtener una transacción por su ID
+  sl.registerLazySingleton<GetTransactionById>(
+    () => GetTransactionById(sl()),
+  );
+
+  /// UpdateTransaction
+  /// Use case para actualizar una transacción
+  sl.registerLazySingleton<UpdateTransaction>(
+    () => UpdateTransaction(sl()),
+  );
+
+  /// DeleteTransaction
+  /// Use case para eliminar una transacción
+  sl.registerLazySingleton<DeleteTransaction>(
+    () => DeleteTransaction(sl()),
+  );
+
+  // ========== CATEGORY USE CASES ==========
+
+  /// GetCategories
+  /// Use case para obtener categorías
+  sl.registerLazySingleton<GetCategories>(
+    () => GetCategories(sl()),
+  );
+
+  /// CreateCategory
+  /// Use case para crear una nueva categoría
+  sl.registerLazySingleton<CreateCategory>(
+    () => CreateCategory(sl()),
+  );
+
   // ========== BLOCS ==========
   // BLoCs para manejar el estado de la UI
 
@@ -178,6 +283,52 @@ Future<void> initializeDependencies() async {
       getCurrentUser: sl(),
       resetPassword: sl(),
       authRepository: sl(),
+    ),
+  );
+
+  /// HomeBloc
+  /// BLoC para manejar el estado de la pantalla de home
+  /// **registerFactory porque?**
+  /// Queremos una nueva instancia cada vez que navegamos a la pantalla
+  /// para que los datos se recarguen frescos
+  sl.registerFactory<HomeBloc>(
+    () => HomeBloc(
+      getRecentTransactions: sl(),
+      getTransactionSummary: sl(),
+    ),
+  );
+
+  /// AddTransactionBloc
+  /// BLoC para manejar el formulario de agregar transacción
+  /// **registerFactory porque?**
+  /// Queremos una nueva instancia cada vez que se abre el modal
+  sl.registerFactory<AddTransactionBloc>(
+    () => AddTransactionBloc(
+      createTransaction: sl(),
+      getCategories: sl(),
+    ),
+  );
+
+  /// CreateCategoryBloc
+  /// BLoC para manejar el formulario de crear categoría
+  /// **registerFactory porque?**
+  /// Queremos una nueva instancia cada vez que se abre el modal
+  sl.registerFactory<CreateCategoryBloc>(
+    () => CreateCategoryBloc(
+      createCategory: sl(),
+    ),
+  );
+
+  /// TransactionDetailBloc
+  /// BLoC para manejar el detalle y edición de transacciones
+  /// **registerFactory porque?**
+  /// Queremos una nueva instancia cada vez que navegamos al detalle
+  sl.registerFactory<TransactionDetailBloc>(
+    () => TransactionDetailBloc(
+      getTransactionById: sl(),
+      updateTransaction: sl(),
+      deleteTransaction: sl(),
+      getCategories: sl(),
     ),
   );
 }

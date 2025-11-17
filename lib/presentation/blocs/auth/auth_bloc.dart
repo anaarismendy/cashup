@@ -66,6 +66,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     _authStateSubscription = _authRepository.authStateChanges.listen((user) {
       add(AuthStateChanged(isAuthenticated: user != null));
     });
+
+    // Verificar automáticamente si hay sesión activa al inicializar
+    add(const AuthCheckRequested());
   }
 
   /// Maneja el registro de un nuevo usuario

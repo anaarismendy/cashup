@@ -473,7 +473,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: Text(
           _selectedBirthDate != null
               ? DateFormat('dd/MM/yyyy').format(_selectedBirthDate!)
-              : 'Selecciona tu fecha de nacimiento',
+              : AppStrings.selectBirthDate,
           style: TextStyle(
             color: _selectedBirthDate != null
                 ? AppColors.textPrimary
@@ -524,7 +524,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (_selectedBirthDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Selecciona tu fecha de nacimiento'),
+          content: Text(AppStrings.selectBirthDate),
           backgroundColor: AppColors.error,
         ),
       );
