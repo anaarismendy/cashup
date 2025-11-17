@@ -14,6 +14,7 @@ import 'package:cashup/presentation/blocs/add_transaction/add_transaction_bloc.d
 import 'package:cashup/presentation/widgets/home/balance_card.dart';
 import 'package:cashup/presentation/widgets/home/transaction_card.dart';
 import 'package:cashup/presentation/widgets/home/empty_transactions_widget.dart';
+import 'package:cashup/presentation/widgets/common/bottom_navigation_bar_widget.dart';
 import 'package:cashup/presentation/screens/add_transaction_screen.dart';
 
 /// **HOME_SCREEN (Pantalla de Inicio)**
@@ -60,6 +61,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
         return Scaffold(
           backgroundColor: AppColors.background,
+          bottomNavigationBar: BottomNavigationBarWidget(
+            currentLocation: GoRouterState.of(context).matchedLocation,
+          ),
           body: SafeArea(
             child: BlocBuilder<HomeBloc, HomeState>(
               builder: (context, state) {
@@ -113,9 +117,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         const SizedBox(height: 32),
 
-                        // Título "Movimientos Recientes"
+                        // Título "Transacciones"
                         const Text(
-                          AppStrings.recentMovements,
+                          AppStrings.allTransactions,
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,

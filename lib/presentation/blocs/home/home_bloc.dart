@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:cashup/domain/usecases/transactions/get_recent_transactions.dart';
+import 'package:cashup/domain/usecases/transactions/get_transactions.dart';
 import 'package:cashup/domain/usecases/transactions/get_transaction_summary.dart';
 import 'package:cashup/presentation/blocs/home/home_event.dart';
 import 'package:cashup/presentation/blocs/home/home_state.dart';
@@ -21,13 +21,13 @@ import 'package:cashup/presentation/blocs/home/home_state.dart';
 /// 5. BLoC emite HomeLoaded o HomeError
 /// 6. UI reacciona al nuevo estado
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
-  final GetRecentTransactions _getRecentTransactions;
+  final GetTransactions _getTransactions;
   final GetTransactionSummary _getTransactionSummary;
 
   HomeBloc({
-    required GetRecentTransactions getRecentTransactions,
+    required GetTransactions getTransactions,
     required GetTransactionSummary getTransactionSummary,
-  })  : _getRecentTransactions = getRecentTransactions,
+  })  : _getTransactions = getTransactions,
         _getTransactionSummary = getTransactionSummary,
         super(const HomeInitial()) {
     // Registrar handlers de eventos
@@ -45,9 +45,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     emit(const HomeLoading());
 
     try {
-      // Obtener resumen financiero y transacciones recientes en paralelo
+      // Obtener resumen financiero y todas las transacciones en paralelo
       final summaryFuture = _getTransactionSummary();
-      final transactionsFuture = _getRecentTransactions(limit: 5);
+      // Usar un límite muy alto para obtener todas las transacciones
+      final transactionsFuture = _getTransactions(limit: 10000);
 
       final summary = await summaryFuture;
       final transactions = await transactionsFuture;
@@ -77,9 +78,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     }
 
     try {
-      // Obtener resumen financiero y transacciones recientes en paralelo
+      // Obtener resumen financiero y todas las transacciones en paralelo
       final summaryFuture = _getTransactionSummary();
-      final transactionsFuture = _getRecentTransactions(limit: 5);
+      // Usar un límite muy alto para obtener todas las transacciones
+      final transactionsFuture = _getTransactions(limit: 10000);
 
       final summary = await summaryFuture;
       final transactions = await transactionsFuture;
