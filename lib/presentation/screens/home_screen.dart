@@ -6,6 +6,7 @@ import 'package:cashup/core/constants/app_strings.dart';
 import 'package:cashup/core/di/injector.dart';
 import 'package:cashup/domain/entities/transaction_type.dart';
 import 'package:cashup/presentation/blocs/auth/auth_bloc.dart';
+import 'package:cashup/presentation/blocs/auth/auth_event.dart';
 import 'package:cashup/presentation/blocs/auth/auth_state.dart';
 import 'package:cashup/presentation/blocs/home/home_bloc.dart';
 import 'package:cashup/presentation/blocs/home/home_event.dart';
@@ -187,18 +188,54 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        // Placeholder para avatar o menú (opcional)
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: AppColors.textSecondary.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
+        // Menú de perfil con opción de cerrar sesión
+        PopupMenuButton<String>(
+          icon: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.textSecondary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.person_outline,
+              color: AppColors.textSecondary,
+            ),
           ),
-          child: const Icon(
-            Icons.person_outline,
-            color: AppColors.textSecondary,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
+          color: AppColors.cardBackground,
+          elevation: 8,
+          onSelected: (value) {
+            if (value == 'logout') {
+              // Cerrar sesión
+              context.read<AuthBloc>().add(const AuthLogoutRequested());
+            }
+          },
+          itemBuilder: (BuildContext context) => [
+            PopupMenuItem<String>(
+              value: 'logout',
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.logout,
+                    color: AppColors.error,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    AppStrings.logout,
+                    style: const TextStyle(
+                      color: AppColors.error,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ],
     );
