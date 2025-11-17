@@ -25,6 +25,7 @@ class AppStrings {
   static const String email = 'Correo electrónico';
   static const String password = 'Contraseña';
   static const String login = 'Iniciar Sesión';
+  static const String logout = 'Cerrar Sesión';
   static const String forgotPassword = '¿Olvidaste tu contraseña?';
   static const String or = 'O';
   static const String noAccount = '¿No tienes cuenta?';
