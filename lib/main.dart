@@ -4,8 +4,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:cashup/core/di/injector.dart';
 import 'package:cashup/core/routes/app_router.dart';
 import 'package:cashup/domain/usecases/onboarding/check_onboarding_status.dart';
-import 'package:cashup/data/datasources/local_storage.dart'
-    as local_storage; // Para resetear onboarding
 
 /// **MAIN.DART - Punto de entrada de la aplicación**
 ///

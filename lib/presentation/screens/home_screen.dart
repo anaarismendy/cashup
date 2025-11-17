@@ -121,7 +121,7 @@ class HomeScreen extends StatelessWidget {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.3),
+            color: AppColors.primary,
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -248,10 +248,10 @@ class HomeScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.1),
+        color: AppColors.primary,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppColors.primary.withOpacity(0.3),
+          color: AppColors.primary,
         ),
       ),
       child: const Row(

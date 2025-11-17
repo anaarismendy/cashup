@@ -108,11 +108,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           // Forzar validación del formulario después de llenar
           _formKey.currentState?.validate();
         });
-        print('✅ Campos auto-completados en modo debug');
-        print('📧 Email generado: ana_test_$randomSuffix@email.com');
       }
     } catch (e) {
-      print('❌ Error al auto-completar campos: $e');
+      throw Exception(e);
     }
   }
 
@@ -132,7 +130,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       floatingActionButton: kDebugMode
           ? FloatingActionButton(
               mini: true,
-              backgroundColor: AppColors.primary.withOpacity(0.8),
+              backgroundColor: AppColors.primary,
               onPressed: _autoFillDebugData,
               tooltip: 'Auto-completar campos (Debug)',
               child: const Icon(
@@ -298,7 +296,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
-                          disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
+                          disabledBackgroundColor: AppColors.primary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),

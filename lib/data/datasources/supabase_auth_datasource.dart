@@ -44,7 +44,6 @@ class SupabaseAuthDataSource {
           'gender': gender ?? 'prefiero_no_decir',
         },
       );
-      print('Usuario creado: ${response}');
       // Si no se crea el usuario, se lanza una excepción
       if (response.user == null) {
         throw Exception('Error al crear usuario');
