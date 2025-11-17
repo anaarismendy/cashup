@@ -1065,11 +1065,17 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
     final yesterday = today.subtract(const Duration(days: 1));
 
     if (transactionDay == today) {
-      return '${AppStrings.today}, ${DateFormat('HH:mm').format(date)}';
+      return AppStrings.today;
     } else if (transactionDay == yesterday) {
-      return '${AppStrings.yesterday}, ${DateFormat('HH:mm').format(date)}';
+      return AppStrings.yesterday;
     } else {
-      return DateFormat('dd \'de\' MMM, yyyy - HH:mm', 'es').format(date);
+      // Usar formato sin locale específico para evitar error de inicialización
+      // Formato: "dd de MMM, yyyy" (ej: "15 de Ene, 2024")
+      final day = date.day.toString().padLeft(2, '0');
+      final monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+      final month = monthNames[date.month - 1];
+      final year = date.year;
+      return '$day de $month, $year';
     }
   }
 }

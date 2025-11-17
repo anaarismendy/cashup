@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:cashup/core/di/injector.dart';
 import 'package:cashup/core/routes/app_router.dart';
@@ -57,6 +59,12 @@ void main() async {
   /// Porque necesitamos que todo esté listo ANTES de que la app arranque.
   await initializeDependencies();
 
+  /// **Inicialización de datos de localización para DateFormat**
+  ///
+  /// Necesario para usar DateFormat con locales específicos (ej: 'es' para español)
+  /// Esto carga los datos de formato de fecha para el locale español
+  await initializeDateFormatting('es', null);
+
   // 🔄 RESETEAR ONBOARDING (Solo para testing - ELIMINAR después)
   // Descomenta estas líneas UNA VEZ para ver el onboarding de nuevo:
   // final localStorage = sl<local_storage.LocalStorage>();
@@ -97,6 +105,19 @@ class MyApp extends StatelessWidget {
       title: 'CashUp',
       debugShowCheckedModeBanner: false,
       // Quita el banner de "DEBUG"
+
+      /// **Localizaciones**
+      /// Necesario para que DatePickerDialog y otros widgets de Material funcionen correctamente
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('es', 'ES'), // Español
+        Locale('en', 'US'), // Inglés (fallback)
+      ],
+      locale: const Locale('es', 'ES'),
 
       /// **Tema de la app**
       ///

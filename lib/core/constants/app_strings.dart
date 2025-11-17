@@ -76,7 +76,8 @@ class AppStrings {
   static const String expenses = 'Gastos';
   static const String addIncome = 'Ingreso';
   static const String addExpense = 'Gasto';
-  static const String recentMovements = 'Movimientos Recientes';
+  static const String recentMovements = 'Transacciones';
+  static const String allTransactions = 'Todas las Transacciones';
   
   // Fechas
   static const String today = 'Hoy';
@@ -132,5 +133,22 @@ class AppStrings {
   static const String confirmDelete = '¿Estás seguro de eliminar esta transacción?';
   static const String yes = 'Sí';
   static const String no = 'No';
+
+  // Estadísticas
+  static const String statistics = 'Estadísticas';
+  static const String expenseDistribution = 'Distribución de Gastos';
+  static const String expensesByCategory = 'Gastos por Categoría';
+  static const String day = 'Día';
+  static const String week = 'Semana';
+  static const String month = 'Mes';
+  static const String year = 'Año';
+  static const String total = 'Total';
+  static const String balance = 'Balance';
+  static const String selectDate = 'Seleccionar Fecha';
+  static const String showDailyExpensesOnly = 'Mostrar solo gastos diarios';
+  static const String selectDay = 'Seleccionar Día';
+  static const String selectWeek = 'Seleccionar Semana';
+  static const String selectMonth = 'Seleccionar Mes';
+  static const String selectYear = 'Seleccionar Año';
 }
 

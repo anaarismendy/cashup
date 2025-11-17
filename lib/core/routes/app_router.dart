@@ -13,6 +13,8 @@ import 'package:cashup/presentation/screens/register_screen.dart';
 import 'package:cashup/presentation/screens/forgot_password_screen.dart';
 import 'package:cashup/presentation/screens/home_screen.dart';
 import 'package:cashup/presentation/screens/transaction_detail_screen.dart';
+import 'package:cashup/presentation/screens/statistics_screen.dart';
+import 'package:cashup/presentation/blocs/statistics/statistics_bloc.dart';
 
 /// **APP_ROUTER (Configuración de Navegación)**
 /// 
@@ -194,6 +196,20 @@ class AppRouter {
             child: TransactionDetailScreen(transactionId: transactionId),
           );
         },
+      ),
+
+      /// Ruta de Estadísticas (/statistics)
+      /// 
+      /// Muestra estadísticas financieras con gráficas y filtros
+      GoRoute(
+        path: '/statistics',
+        pageBuilder: (context, state) => MaterialPage(
+          key: state.pageKey,
+          child: BlocProvider(
+            create: (context) => sl<StatisticsBloc>(),
+            child: const StatisticsScreen(),
+          ),
+        ),
       ),
 
       // ========== RUTAS FUTURAS ==========

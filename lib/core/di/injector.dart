@@ -7,18 +7,21 @@ import 'package:cashup/data/datasources/local_storage.dart' as local_storage;
 import 'package:cashup/data/datasources/supabase_auth_datasource.dart';
 import 'package:cashup/data/datasources/supabase_transaction_datasource.dart';
 import 'package:cashup/data/datasources/supabase_category_datasource.dart';
+import 'package:cashup/data/datasources/supabase_statistics_datasource.dart';
 
 // Repositories Implementations
 import 'package:cashup/data/repositories/onboarding_repository_impl.dart';
 import 'package:cashup/data/repositories/auth_repository_impl.dart';
 import 'package:cashup/data/repositories/transaction_repository_impl.dart';
 import 'package:cashup/data/repositories/category_repository_impl.dart';
+import 'package:cashup/data/repositories/statistics_repository_impl.dart';
 
 // Domain Repositories
 import 'package:cashup/domain/repositories/onboarding_repository.dart';
 import 'package:cashup/domain/repositories/auth_repository.dart';
 import 'package:cashup/domain/repositories/transaction_repository.dart';
 import 'package:cashup/domain/repositories/category_repository.dart';
+import 'package:cashup/domain/repositories/statistics_repository.dart';
 
 // Onboarding Use Cases
 import 'package:cashup/domain/usecases/onboarding/check_onboarding_status.dart';
@@ -44,6 +47,12 @@ import 'package:cashup/domain/usecases/transactions/delete_transaction.dart';
 import 'package:cashup/domain/usecases/categories/get_categories.dart';
 import 'package:cashup/domain/usecases/categories/create_category.dart';
 
+// Statistics Use Cases
+import 'package:cashup/domain/usecases/statistics/get_category_statistics.dart';
+import 'package:cashup/domain/usecases/statistics/get_daily_summary.dart';
+import 'package:cashup/domain/usecases/statistics/get_weekly_summary.dart';
+import 'package:cashup/domain/usecases/statistics/get_monthly_summary.dart';
+
 // BLoCs
 import 'package:cashup/presentation/blocs/onboarding/onboarding_bloc.dart';
 import 'package:cashup/presentation/blocs/auth/auth_bloc.dart';
@@ -51,6 +60,7 @@ import 'package:cashup/presentation/blocs/home/home_bloc.dart';
 import 'package:cashup/presentation/blocs/add_transaction/add_transaction_bloc.dart';
 import 'package:cashup/presentation/blocs/create_category/create_category_bloc.dart';
 import 'package:cashup/presentation/blocs/transaction_detail/transaction_detail_bloc.dart';
+import 'package:cashup/presentation/blocs/statistics/statistics_bloc.dart';
 
 /// **INJECTOR (Configuración de GetIt)**
 /// 
@@ -126,6 +136,12 @@ Future<void> initializeDependencies() async {
     () => SupabaseCategoryDataSource(sl()),
   );
 
+  /// SupabaseStatisticsDataSource
+  /// Maneja todas las operaciones de estadísticas con Supabase
+  sl.registerLazySingleton<SupabaseStatisticsDataSource>(
+    () => SupabaseStatisticsDataSource(sl()),
+  );
+
   // ========== REPOSITORIES ==========
   // Implementaciones de los repositorios
 
@@ -153,6 +169,12 @@ Future<void> initializeDependencies() async {
   /// Repositorio de categorías
   sl.registerLazySingleton<CategoryRepository>(
     () => CategoryRepositoryImpl(sl()),
+  );
+
+  /// StatisticsRepository
+  /// Repositorio de estadísticas
+  sl.registerLazySingleton<StatisticsRepository>(
+    () => StatisticsRepositoryImpl(sl()),
   );
 
   // ========== USE CASES ==========
@@ -260,6 +282,32 @@ Future<void> initializeDependencies() async {
     () => CreateCategory(sl()),
   );
 
+  // ========== STATISTICS USE CASES ==========
+
+  /// GetCategoryStatistics
+  /// Use case para obtener estadísticas de categorías
+  sl.registerLazySingleton<GetCategoryStatistics>(
+    () => GetCategoryStatistics(sl()),
+  );
+
+  /// GetDailySummary
+  /// Use case para obtener resúmenes diarios
+  sl.registerLazySingleton<GetDailySummary>(
+    () => GetDailySummary(sl()),
+  );
+
+  /// GetWeeklySummary
+  /// Use case para obtener resumen semanal
+  sl.registerLazySingleton<GetWeeklySummary>(
+    () => GetWeeklySummary(sl()),
+  );
+
+  /// GetMonthlySummary
+  /// Use case para obtener resumen mensual
+  sl.registerLazySingleton<GetMonthlySummary>(
+    () => GetMonthlySummary(sl()),
+  );
+
   // ========== BLOCS ==========
   // BLoCs para manejar el estado de la UI
 
@@ -293,7 +341,7 @@ Future<void> initializeDependencies() async {
   /// para que los datos se recarguen frescos
   sl.registerFactory<HomeBloc>(
     () => HomeBloc(
-      getRecentTransactions: sl(),
+      getTransactions: sl(),
       getTransactionSummary: sl(),
     ),
   );
@@ -329,6 +377,19 @@ Future<void> initializeDependencies() async {
       updateTransaction: sl(),
       deleteTransaction: sl(),
       getCategories: sl(),
+    ),
+  );
+
+  /// StatisticsBloc
+  /// BLoC para manejar el estado de la pantalla de estadísticas
+  /// **registerFactory porque?**
+  /// Queremos una nueva instancia cada vez que navegamos a la pantalla
+  sl.registerFactory<StatisticsBloc>(
+    () => StatisticsBloc(
+      getCategoryStatistics: sl(),
+      getDailySummary: sl(),
+      getWeeklySummary: sl(),
+      getMonthlySummary: sl(),
     ),
   );
 }
