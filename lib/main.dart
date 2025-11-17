@@ -37,16 +37,6 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  /// **Inicialización de Supabase**
-  ///
-  /// **TODO: AGREGAR TUS CREDENCIALES DE SUPABASE**
-  ///
-  /// Pasos para obtener las credenciales:
-  /// 1. Ve a https://supabase.com
-  /// 2. Crea un proyecto o abre uno existente
-  /// 3. Ve a Settings > API
-  /// 4. Copia la URL y la anon key
-  /// 5. Reemplázalas aquí abajo:
   await Supabase.initialize(
     url:
         'https://brbutrafgcxtjcliindg.supabase.co', // Ej: https://xxxxxxxxxxx.supabase.co
