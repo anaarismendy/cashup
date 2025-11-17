@@ -37,17 +37,21 @@ class SupabaseStatisticsDataSource {
         throw Exception('Usuario no autenticado');
       }
 
+      // Crear los parámetros para la llamada RPC
       final params = <String, dynamic>{
         'p_user_id': userId,
       };
 
       if (startDate != null) {
+        // Convertir la fecha a formato ISO 8601 y obtener solo la parte de la fecha
         params['p_start_date'] = startDate.toIso8601String().split('T')[0];
       }
       if (endDate != null) {
+        // Convertir la fecha a formato ISO 8601 y obtener solo la parte de la fecha
         params['p_end_date'] = endDate.toIso8601String().split('T')[0];
       }
       if (type != null) {
+        // Convertir el tipo de transacción a JSON
         params['p_type'] = type.toJson();
       }
 
@@ -68,6 +72,7 @@ class SupabaseStatisticsDataSource {
             // Solo incluir categorías que tengan transacciones (transaction_count > 0)
             final transactionCount = item['transaction_count'] as int? ?? 0;
             if (transactionCount > 0) {
+              // Agregar la categoría a la lista de resultados
               results.add(CategoryStatisticsModel.fromJson(item));
             }
           }

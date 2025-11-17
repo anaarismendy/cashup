@@ -63,6 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return Scaffold(
           backgroundColor: AppColors.background,
           bottomNavigationBar: BottomNavigationBarWidget(
+            // Obtener la ruta actual de la navegación
             currentLocation: GoRouterState.of(context).matchedLocation,
           ),
           body: SafeArea(
@@ -70,6 +71,9 @@ class _HomeScreenState extends State<HomeScreen> {
               builder: (context, state) {
                 // Cargar datos cuando se monta la pantalla
                 if (state is HomeInitial) {
+                  // Agregar el evento para cargar los datos
+                  // El HomeDataRequested es un evento que se encarga de cargar los datos de la pantalla de inicio
+
                   context.read<HomeBloc>().add(const HomeDataRequested());
                 }
 
@@ -81,7 +85,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                   color: AppColors.primary,
                   child: SingleChildScrollView(
+                    // Configurar el scroll para que siempre se pueda scrollar
                     physics: const AlwaysScrollableScrollPhysics(),
+                    // Configurar el padding para que el contenido se muestre correctamente
                     padding: const EdgeInsets.all(20.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,6 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// Construye el header con saludo y nombre
   Widget _buildHeader(String userName) {
+    // Construir el header con saludo y nombre
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -189,6 +196,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         // Menú de perfil con opción de cerrar sesión
+        // PopupMenuButton es un widget que muestra un menú emergente cuando se presiona
         PopupMenuButton<String>(
           icon: Container(
             width: 40,
@@ -202,7 +210,9 @@ class _HomeScreenState extends State<HomeScreen> {
               color: AppColors.textSecondary,
             ),
           ),
+          //roundedRectangleBorder es un widget que muestra un borde redondeado
           shape: RoundedRectangleBorder(
+
             borderRadius: BorderRadius.circular(12),
           ),
           color: AppColors.cardBackground,

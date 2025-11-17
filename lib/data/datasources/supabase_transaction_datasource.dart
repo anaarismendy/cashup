@@ -22,12 +22,28 @@ class SupabaseTransactionDataSource {
   /// - `limit`: Número máximo de transacciones a retornar (default: 10)
   /// - `orderBy`: Campo por el cual ordenar (default: 'transaction_date')
   /// - `ascending`: Si ordenar ascendente o descendente (default: false)
+  /// 
+  // Obtiene todas las transacciones del usuario autenticado
+  /// 
+  /// **Parámetros:**
+  /// - `limit`: Número máximo de transacciones a retornar (default: 10)
+  /// - `orderBy`: Campo por el cual ordenar (default: 'transaction_date')
+  /// - `ascending`: Si ordenar ascendente o descendente (default: false)
+  /// 
+  /// **Retorna:**
+  /// - Lista de transacciones del usuario
+  /// 
+  /// **Excepciones:**
+  /// - `Exception('Usuario no autenticado')`: Si el usuario no está autenticado
+  /// - `Exception('Error al obtener transacciones')`: Si hay un error al obtener las transacciones
+  /// - `Exception('Error inesperado')`: Si hay un error inesperado
   Future<List<TransactionModel>> getTransactions({
     int limit = 10,
     String orderBy = 'transaction_date',
     bool ascending = false,
   }) async {
     try {
+      // Obtener el ID del usuario autenticado
       final userId = _supabaseClient.auth.currentUser?.id;
       if (userId == null) {
         throw Exception('Usuario no autenticado');
@@ -99,6 +115,7 @@ class SupabaseTransactionDataSource {
       return TransactionModel.fromJson(response);
     } on PostgrestException catch (e) {
       // Manejar errores específicos de validación
+      // Si el mensaje contiene 'validate_transaction_category' o 'categoría no es válida' o 'category is not valid'
       if (e.message.contains('validate_transaction_category') ||
           e.message.contains('categoría no es válida') ||
           e.message.contains('category is not valid')) {

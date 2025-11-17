@@ -20,17 +20,35 @@ class SupabaseCategoryDataSource {
   /// **Retorna:**
   /// - Categorías del sistema (predefinidas)
   /// - Categorías personalizadas del usuario
+  /// 
+  
+  // Obtiene todas las categorías disponibles para el usuario
   Future<List<CategoryModel>> getCategories({
+
+    /// **Parámetros:**
+    /// - `type`: Tipo de transacción (income o expense)
+    /// 
+    /// **Retorna:**
+    /// - Categorías del sistema (predefinidas)
+    /// - Categorías personalizadas del usuario
+    /// 
+    /// **Excepciones:**
+    /// - `Exception('Usuario no autenticado')`: Si el usuario no está autenticado
+    /// - `Exception('Error al obtener categorías')`: Si hay un error al obtener las categorías
+    /// - `Exception('Error inesperado')`: Si hay un error inesperado
     TransactionType? type,
   }) async {
     try {
+      // Obtener el ID del usuario autenticado
       final userId = _supabaseClient.auth.currentUser?.id;
       if (userId == null) {
+        // Si el usuario no está autenticado, lanzar un error
         throw Exception('Usuario no autenticado');
       }
 
       // Obtener categorías del sistema (is_system = true, user_id = null)
       // Y categorías del usuario (user_id = userId)
+      // Usar la sintaxis OR para obtener ambas categorías
       var query = _supabaseClient
           .from('categories')
           .select()

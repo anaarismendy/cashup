@@ -51,12 +51,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Obtener el BLoC de la pantalla de agregar transacción
     return BlocProvider.value(
+      // Agregar el evento para inicializar el formulario
+      // El AddTransactionInitialized es un evento que se encarga de inicializar el formulario de agregar transacción
       value: context.read<AddTransactionBloc>()
         ..add(AddTransactionInitialized(initialType: widget.initialType)),
       child: BlocConsumer<AddTransactionBloc, AddTransactionState>(
+        // Listener para manejar los eventos del BLoC
         listener: (context, state) {
           if (state is AddTransactionSuccess) {
+            // Retornar true para indicar éxito
             Navigator.of(context).pop(true); // Retornar true para indicar éxito
             CustomSnackBar.showSuccess(
               context,
