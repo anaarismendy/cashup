@@ -491,6 +491,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   Future<void> _selectDate(BuildContext context, AddTransactionFormReady state) async {
+    final bloc = context.read<AddTransactionBloc>();
     final picked = await showDatePicker(
       context: context,
       initialDate: state.transactionDate,
@@ -498,9 +499,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
 
-    // Verificar que el widget esté montado antes de usar context
+    // Verificar que el widget esté montado antes de usar el BLoC
     if (picked != null && mounted) {
-      context.read<AddTransactionBloc>().add(
+      bloc.add(
         AddTransactionDateChanged(date: picked),
       );
     }

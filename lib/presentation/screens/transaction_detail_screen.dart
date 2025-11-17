@@ -72,9 +72,10 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
               message: AppStrings.transactionUpdated,
             );
             // Regresar a home después de un delay para que el usuario vea el mensaje y los datos actualizados
+            final navigator = Navigator.of(context);
             Future.delayed(const Duration(milliseconds: 1500), () {
               if (mounted) {
-                context.pop(true);
+                navigator.pop(true);
               }
             });
           } else if (state is TransactionDetailSaveSuccess) {
@@ -83,9 +84,10 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
               context,
               message: AppStrings.transactionUpdated,
             );
+            final navigator = Navigator.of(context);
             Future.delayed(const Duration(milliseconds: 800), () {
               if (mounted) {
-                context.pop(true);
+                navigator.pop(true);
               }
             });
           } else if (state is TransactionDetailDeleteSuccess) {
@@ -281,15 +283,10 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
           width: 80,
           height: 80,
           decoration: BoxDecoration(
-            color: categoryColor.withOpacity(0.15),
+            color: categoryColor.withValues(alpha: 0.15),
             shape: BoxShape.circle,
           ),
-          child: Center(
-            child: Text(
-              categoryIcon,
-              style: const TextStyle(fontSize: 40),
-            ),
-          ),
+          child: Center(child: Text(categoryIcon, style: const TextStyle(fontSize: 40))),
         ),
         const SizedBox(height: 16),
         Text(
@@ -765,7 +762,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
           border: Border.all(color: color, width: 2),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -808,20 +805,20 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
         height: 56,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [color, color.withOpacity(0.8)],
+            colors: [color, color.withValues(alpha: 0.8)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.4),
+              color: color.withValues(alpha: 0.4),
               blurRadius: 12,
               offset: const Offset(0, 6),
               spreadRadius: 0,
             ),
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -832,8 +829,8 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
           child: InkWell(
             onTap: onPressed,
             borderRadius: BorderRadius.circular(20),
-            splashColor: Colors.white.withOpacity(0.2),
-            highlightColor: Colors.white.withOpacity(0.1),
+            splashColor: Colors.white.withValues(alpha: 0.2),
+            highlightColor: Colors.white.withValues(alpha: 0.1),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Row(
@@ -873,8 +870,8 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: state.isSaving || !state.isValid
-                  ? [AppColors.textSecondary.withOpacity(0.5), AppColors.textSecondary.withOpacity(0.3)]
-                  : [primaryColor, primaryColor.withOpacity(0.8)],
+                  ? [AppColors.textSecondary.withValues(alpha: 0.5), AppColors.textSecondary.withValues(alpha: 0.3)]
+                  : [primaryColor, primaryColor.withValues(alpha: 0.8)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -883,13 +880,13 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                 ? []
                 : [
                     BoxShadow(
-                      color: primaryColor.withOpacity(0.4),
+                      color: primaryColor.withValues(alpha: 0.4),
                       blurRadius: 12,
                       offset: const Offset(0, 6),
                       spreadRadius: 0,
                     ),
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -906,8 +903,8 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                       );
                     },
               borderRadius: BorderRadius.circular(20),
-              splashColor: Colors.white.withOpacity(0.2),
-              highlightColor: Colors.white.withOpacity(0.1),
+              splashColor: Colors.white.withValues(alpha: 0.2),
+              highlightColor: Colors.white.withValues(alpha: 0.1),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 child: Center(
@@ -948,7 +945,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -976,7 +973,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                     AppStrings.cancel,
                     style: TextStyle(
                       color: state.isSaving
-                          ? AppColors.textSecondary.withOpacity(0.5)
+                          ? AppColors.textSecondary.withValues(alpha: 0.5)
                           : AppColors.textSecondary,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -993,6 +990,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
   }
 
   Future<void> _selectDate(BuildContext context, DateTime initialDate) async {
+    final bloc = context.read<TransactionDetailBloc>();
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: initialDate,
@@ -1001,7 +999,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
     );
 
     if (picked != null && mounted) {
-      context.read<TransactionDetailBloc>().add(
+      bloc.add(
         TransactionDetailDateChanged(date: picked),
       );
     }

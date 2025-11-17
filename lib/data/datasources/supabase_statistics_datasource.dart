@@ -71,7 +71,7 @@ class SupabaseStatisticsDataSource {
               results.add(CategoryStatisticsModel.fromJson(item));
             }
           }
-        } catch (e, stackTrace) {
+        } catch (e) {
           // Log del error pero continuar con las demás categorías
           throw Exception('Error al procesar categoría: $e');
         }
@@ -80,9 +80,7 @@ class SupabaseStatisticsDataSource {
       return results;
     } on PostgrestException catch (e) {
       throw Exception('Error de Supabase al obtener estadísticas: ${e.message}');
-    } catch (e, stackTrace) {
-      print('Error completo: $e');
-      print('Stack trace: $stackTrace');
+    } catch (e) {
       throw Exception('Error al obtener estadísticas de categorías: $e');
     }
   }
