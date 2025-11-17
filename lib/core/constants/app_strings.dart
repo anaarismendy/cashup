@@ -67,5 +67,70 @@ class AppStrings {
   // Éxitos
   static const String loginSuccess = '¡Bienvenido de vuelta!';
   static const String registerSuccess = '¡Cuenta creada exitosamente!';
+  
+  // Home
+  static const String hello = 'Hola,';
+  static const String guest = 'Invitado';
+  static const String balanceTotal = 'Balance Total';
+  static const String income = 'Ingresos';
+  static const String expenses = 'Gastos';
+  static const String addIncome = 'Ingreso';
+  static const String addExpense = 'Gasto';
+  static const String recentMovements = 'Movimientos Recientes';
+  
+  // Fechas
+  static const String today = 'Hoy';
+  static const String yesterday = 'Ayer';
+  
+  // Mensajes de error
+  static const String pleaseCompleteAllFields = 'Por favor completa todos los campos';
+  static const String selectBirthDate = 'Selecciona tu fecha de nacimiento';
+  
+  // Agregar Transacción
+  static const String newTransaction = 'Nuevo Gasto';
+  static const String newIncome = 'Nuevo Ingreso';
+  static const String newExpense = 'Nuevo Gasto';
+  static const String title = 'Título';
+  static const String titlePlaceholder = 'Ej: Almuerzo';
+  static const String amount = 'Monto';
+  static const String description = 'Descripción (opcional)';
+  static const String descriptionPlaceholder = 'Añade una nota...';
+  static const String category = 'Categoría';
+  static const String date = 'Fecha';
+  static const String save = 'Guardar';
+  static const String cancel = 'Cancelar';
+  static const String newCategory = 'Nueva';
+  static const String selectCategory = 'Selecciona una categoría';
+  
+  // Crear Categoría
+  static const String newCategoryTitle = 'Nueva Categoría';
+  static const String categoryName = 'Nombre';
+  static const String categoryNamePlaceholder = 'Ej: Restaurantes';
+  static const String type = 'Tipo';
+  static const String icon = 'Ícono';
+  static const String color = 'Color';
+  static const String preview = 'Vista previa';
+  static const String categoryPreviewName = 'Nombre de categoría';
+  static const String categoryPreviewTransactions = 'transacciones';
+  
+  // Mensajes de éxito/error
+  static const String transactionSaved = 'Transacción guardada exitosamente';
+  static const String transactionUpdated = 'Transacción actualizada exitosamente';
+  static const String transactionDeleted = 'Transacción eliminada exitosamente';
+  static const String categorySaved = 'Categoría creada exitosamente';
+  static const String errorSavingTransaction = 'Error al guardar transacción';
+  static const String errorUpdatingTransaction = 'Error al actualizar transacción';
+  static const String errorDeletingTransaction = 'Error al eliminar transacción';
+  static const String errorCreatingCategory = 'Error al crear categoría';
+  static const String amountMustBeGreaterThanZero = 'El monto debe ser mayor a cero';
+
+  // Detalle de Transacción
+  static const String detail = 'Detalle';
+  static const String edit = 'Editar';
+  static const String delete = 'Eliminar';
+  static const String editTransaction = 'Editar Transacción';
+  static const String confirmDelete = '¿Estás seguro de eliminar esta transacción?';
+  static const String yes = 'Sí';
+  static const String no = 'No';
 }
 

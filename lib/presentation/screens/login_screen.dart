@@ -5,6 +5,7 @@ import 'package:cashup/core/constants/app_strings.dart';
 import 'package:cashup/presentation/blocs/auth/auth_bloc.dart';
 import 'package:cashup/presentation/blocs/auth/auth_event.dart';
 import 'package:cashup/presentation/blocs/auth/auth_state.dart';
+import 'package:cashup/presentation/widgets/common/custom_snackbar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 
@@ -55,23 +56,18 @@ class _LoginScreenState extends State<LoginScreen> {
           // Escuchar cambios de estado para mostrar feedback
           if (state is AuthAuthenticated) {
             // Éxito: Mostrar mensaje y navegar a home
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(AppStrings.loginSuccess),
-                backgroundColor: AppColors.success,
-                duration: Duration(seconds: 2),
-              ),
+            CustomSnackBar.showSuccess(
+              context,
+              message: AppStrings.loginSuccess,
+              duration: const Duration(seconds: 2),
             );
             // Navegar a home
             context.go('/home');
           } else if (state is AuthError) {
             // Error: Mostrar mensaje
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message.replaceAll('Exception:', '').trim()),
-                backgroundColor: AppColors.error,
-                duration: const Duration(seconds: 3),
-              ),
+            CustomSnackBar.showError(
+              context,
+              message: state.message.replaceAll('Exception:', '').trim(),
             );
           }
         },
@@ -303,7 +299,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Por favor completa todos los campos'),
+          content: Text(AppStrings.pleaseCompleteAllFields),
           backgroundColor: AppColors.error,
         ),
       );

@@ -4,8 +4,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:cashup/core/di/injector.dart';
 import 'package:cashup/core/routes/app_router.dart';
 import 'package:cashup/domain/usecases/onboarding/check_onboarding_status.dart';
-import 'package:cashup/data/datasources/local_storage.dart'
-    as local_storage; // Para resetear onboarding
+import 'package:cashup/domain/usecases/auth/get_current_user.dart';
+import 'package:cashup/presentation/blocs/auth/auth_bloc.dart';
 
 /// **MAIN.DART - Punto de entrada de la aplicación**
 ///
@@ -37,16 +37,6 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  /// **Inicialización de Supabase**
-  ///
-  /// **TODO: AGREGAR TUS CREDENCIALES DE SUPABASE**
-  ///
-  /// Pasos para obtener las credenciales:
-  /// 1. Ve a https://supabase.com
-  /// 2. Crea un proyecto o abre uno existente
-  /// 3. Ve a Settings > API
-  /// 4. Copia la URL y la anon key
-  /// 5. Reemplázalas aquí abajo:
   await Supabase.initialize(
     url:
         'https://brbutrafgcxtjcliindg.supabase.co', // Ej: https://xxxxxxxxxxx.supabase.co
@@ -73,6 +63,13 @@ void main() async {
   // await localStorage.resetOnboarding();
   // print('✅ Onboarding reseteado - Elimina estas líneas después');
 
+  /// **Inicializar AuthBloc para verificar sesión activa**
+  /// 
+  /// Al solicitar el AuthBloc, se crea automáticamente (lazy singleton)
+  /// y su constructor verifica si hay una sesión activa.
+  /// Esto asegura que el usuario se cargue antes de que la app inicie.
+  sl<AuthBloc>();
+
   /// **Iniciar la aplicación**
   runApp(const MyApp());
 }
@@ -88,9 +85,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Creamos el router y le pasamos el use case
-    // para que pueda verificar el estado del onboarding
-    final appRouter = AppRouter(sl<CheckOnboardingStatus>());
+    // Creamos el router y le pasamos los use cases
+    // para que pueda verificar el estado del onboarding y la sesión activa
+    final appRouter = AppRouter(
+      sl<CheckOnboardingStatus>(),
+      sl<GetCurrentUser>(),
+    );
 
     return MaterialApp.router(
       /// **Configuración básica**
